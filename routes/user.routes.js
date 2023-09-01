@@ -1,19 +1,20 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
-const { UserModel } = require("../models/user.models")
+const { UserModel } = require("../models/user.models");
+require("dotenv").config();
 
 const userrouter = express.Router();
 
 
 userrouter.post("/signup", async (req, res) => {
     try {
-        let { username, password } = req.body;
+        let { email, password } = req.body;
 
-        const userexist = await UserModel.findOne({ username })
+        const userexist = await UserModel.findOne({ email })
 
         if (userexist) {
-            return res.status(400).json({ "msg": "Sorry, username already registered." })
+            return res.status(400).json({ "msg": "Sorry, email already registered." })
         }
 
         bcrypt.hash(password, 2, async function (err, hash) {
@@ -21,7 +22,7 @@ userrouter.post("/signup", async (req, res) => {
                 return res.send({ "msg": err })
             }
 
-            const user = new UserModel({ username, password: hash })
+            const user = new UserModel({ email, password: hash })
             await user.save()
             return res.send({ "msg": "User registered successfully." })
 
@@ -35,15 +36,15 @@ userrouter.post("/signup", async (req, res) => {
 
 userrouter.post("/login", async (req, res) => {
     try {
-        let { username, password } = req.body;
+        let { email, password } = req.body;
 
-        const userexist = await UserModel.findOne({ username });
+        const userexist = await UserModel.findOne({ email });
 
         if (userexist) {
 
             bcrypt.compare(password, userexist.password, function (err, result) {
                 if (result) {
-                    let token = jwt.sign({ userid: userexist._id }, 'shhhhh');
+                    let token = jwt.sign({ userid: userexist._id }, process.env.key);
                     res.send({ msg: "Login Succsess", token })
                 }
                 else {

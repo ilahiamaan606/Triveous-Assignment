@@ -4,7 +4,7 @@ const productSchema = mongoose.Schema({
     title: String,
     price: Number,
     description: String,
-    availability: String,
+    availability: { type: Boolean, default: true },
     categoryId: Number
 }, { versionKey: false })
 
